@@ -1,0 +1,1246 @@
+create table student156(
+ dob date constraint notnull_dob not null,
+ mobile number(10) constraint notnull_mob2 not null,
+ email varchar(50) constraint notnull_email2 not null,
+ roll number(10) constraint pkey_roll_stud primary key,
+ sname varchar(50) constraint notnull_sname not null,
+ pincode number(6) constraint notnull_pin not null,
+ houseno number(3) constraint notnull_hno not null,
+ city varchar(50) constraint notnull_city not null,
+ constraint ckey_sname_address unique(sname,pincode,houseno,city),
+ constraint ckey_email_stud unique(email),
+ constraint ckey_mob_stud unique(mobile)
+);
+
+create table section156(
+ batch number(4) constraint notnull_batch not null,
+ sec_id varchar(2) constraint pkey_sec primary key
+);
+drop table section156 cascade constraints;
+create table faculty156(
+ salary number(10,2) constraint notnull_sal not null,
+ fname varchar(50) constraint notnull_fname not null,
+ empid varchar(20) constraint pkey_empid primary key,
+ emob number(10) constraint notnull_emob not null,
+ constraint ckey_emob unique(emob)
+);
+
+insert into faculty156 values(
+ 60000, 'F1', 'E101', 90001);
+
+insert into faculty156 values(
+ 50000, 'F2', 'E102', 90002);
+
+insert into faculty156 values(
+ 70000, 'F3', 'E103', 90003);
+
+insert into faculty156 values(
+ 55000, 'F4', 'E104', 90004);
+
+insert into faculty156 values(
+ 75000, 'F5', 'E105', 90005);
+
+select * from tab;
+
+create table department156(
+ depid varchar(10) constraint pkey_did primary key,
+ yos number(4),
+ offloc varchar(20) constraint notnull_offloc not null,
+ dname varchar(20) constraint notnull_dname not null,
+ hod varchar(20) constraint notnull_hod not null,
+ constraint ckey_hod unique(hod),
+ constraint fkey_hod foreign key(hod) references faculty156(empid)
+);
+
+alter table department156
+add constraint ckey_dname unique(dname);
+
+
+
+insert into department156 values(
+ 'Dep1', 2000, 'HITK ICT', 'CSE', 'E101');
+
+insert into department156 values(
+ 'Dep2', 2001, 'HITK CB', 'ECE', 'E102');
+
+insert into department156 values(
+ 'Dep3', 2002, 'HITK CME', 'AIML', 'E103');
+
+insert into department156 values(
+ 'Dep4', 2003, 'HITK ICTB', 'IT', 'E104');
+
+insert into department156 values(
+ 'Dep5', 2004, 'HITK CMEB', 'BT', 'E105');
+
+alter table faculty156
+add wud varchar(10);
+
+alter table faculty156
+add supervisedby_emp varchar(20);
+
+update faculty156 set wud = 'Dep1' where empid in('E101', 'E102');
+update faculty156 set wud = 'Dep2' where empid in('E103', 'E104');
+update faculty156 set wud = 'Dep3' where empid in('E105');
+
+update faculty156 set supervisedby_emp='E101' where empid IN('E101','E102','E103');
+update faculty156 set supervisedby_emp='E104' where empid IN('E104','E105');
+
+alter table faculty156
+add constraint cons_fkey_wud foreign key(wud) references department156(depid);
+
+alter table faculty156
+modify wud varchar(10) constraint notnull_wud not null;
+
+alter table faculty156
+add constraint cons_fkey_sup foreign key(supervisedby_emp) references faculty156(empid);
+drop table faculty156 cascade constraints;
+alter table student156
+add belongsto_sec varchar(2) constraint cons_nnull_btsec not null;
+
+alter table student156
+add constraint cons_fkey_btsec foreign key(belongsto_sec) references section156(sec_id);
+
+create table course156(
+ cid varchar(20) constraint pkey_cid primary key,
+ cname varchar(50) constraint notnull_cname not null,
+ discipline varchar(50) constraint notnull_discipline not null,
+ offeredby_dep varchar(10) constraint notnull_offdep not null,
+ constraint cons_fkey_offdep foreign key(offeredby_dep) references department156(depid)
+);
+
+
+add constraint unique_cname_dept  unique(cname);
+
+drop table course156 cascade constraints;
+
+
+
+alter table course156 drop column cname;
+alter table course156 drop column discipline;
+alter table course156 add cname varchar2(50);
+alter table course156 add discipline varchar2(50);
+alter table course156 add cname varchar(50)constraint cname_not_null not null;
+
+alter table course156 add discipline varchar(50)constraint discipline_not_null not null;
+alter table course156 add constraint cname_disc_uniq unique(cname,discipline);
+
+
+create table course156(
+  cid varchar2(20) constraint pkey_cid primary key,
+  cname varchar2(50) constraint cname_not_null not null,
+  discipline varchar2(50) constraint discipline_not_null not null,
+  offeredby_dep varchar2(10) constraint notnull_offdep not null,
+  constraint cons_fkey_offdep foreign key(offeredby_dep) references department156(depid),
+  constraint cname_disc_uniq unique(cname, discipline)
+);
+
+
+
+add constraint c_key_discipline unique(discipline);
+
+create table subject156(
+ papercode varchar(20) constraint pkey_pcode primary key,
+ pname varchar(20) constraint notnull_pname not null,
+ credit number(2) constraint notnull_cred not null
+);
+
+drop  table subject156 cascade constraints;
+create table subject156(
+ papercode varchar(20) constraint pkey_pcode primary key,
+ pname varchar(20) constraint notnull_pname not null
+);
+
+create table contains156(
+ ccid varchar(20) constraint notnull_ccid not null,
+ cpapcode varchar(20) constraint notnull_cpap not null,
+ semester number(1) constraint notnull_sem not null,
+ constraint pkey_contains primary key(ccid, cpapcode, semester),
+ constraint fkey_ccid foreign key(ccid) references course156(cid),
+ constraint fkey_cpap foreign key(cpapcode) references subject156(papercode)
+);
+
+alter table contains156
+drop constraint notnull_ccid;
+
+alter table contains156
+drop constraint notnull_cpap;
+
+alter table contains156
+drop constraint notnull_sem;
+
+drop constraint contains156 cascade constraints;
+create table exam156(
+ perfby_roll number(10) constraint notnull_eroll not null,
+ epapcode varchar(20) constraint notnull_epap not null,
+ esession number(3) constraint notnull_ses not null,
+ marks number(3) constraint notnull_marks not null,
+ constraint pkey_exam primary key(perfby_roll, epapcode, esession),
+ constraint fkey_perfbyroll foreign key(perfby_roll) references student156(roll)
+);
+
+alter table exam156
+drop constraint notnull_eroll;
+
+alter table exam156
+drop constraint notnull_epap;
+
+alter table exam156
+drop constraint notnull_ses;
+
+alter table exam156
+add constraint fkey_papercode foreign key(epapcode) references subject156(papercode);
+
+create table teaches156(
+ tempid varchar(20) constraint notnull_tid not null,
+ tpapcode varchar(10) constraint notnull_tpap not null,
+ tsession number(3) constraint notnull_tses not null,
+ constraint pkey_teaches primary key(tempid, tpapcode, tsession),
+ constraint fkey_tid foreign key(tempid) references faculty156(empid),
+ constraint fkey_tpap foreign key(tpapcode) references subject156(papercode)
+);
+
+alter table teaches156
+drop constraint notnull_tid;
+
+alter table teaches156
+drop constraint notnull_tpap;
+
+alter table teaches156
+drop constraint notnull_tses;
+
+alter table student156
+add enroll_cid varchar(10) constraint notnull_ecid not null;
+
+alter table student156
+add constraint fkey_encid foreign key(enroll_cid) references course156(cid);
+
+alter table student156
+add yoa number(4) constraint notnull_yoa not null;
+
+alter table section156
+add studying_cid varchar(10) constraint notnull_scid not null;
+
+alter table section156
+add constraint fkey_scid foreign key(studying_cid) references course156(cid);
+
+create table instructed156(
+ inssecid varchar(2) constraint notnull_isecid not null,
+ insempid varchar(20) constraint notnull_iempid not null,
+ isession number(3) constraint notnull_ises not null,
+ constraint pkey_ins primary key(inssecid, insempid, isession),
+ constraint fkey_isecid foreign key(inssecid) references section156(sec_id),
+ constraint fkey_iempid foreign key(insempid) references faculty156(empid)
+);
+
+alter
+alter table instructed156
+drop constraint notnull_isecid;
+
+alter table instructed156
+drop constraint notnull_iempid;
+
+alter table instructed156
+drop constraint notnull_ises;
+drop table instructed156 cascade constraints;
+desc course156;
+
+insert into course156
+values('C01','BTECH','CSE','Dep1');
+
+insert into course156
+values('C02','MTECH','ECE','Dep2');
+
+insert into course156
+values('C03','Diploma','AIML','Dep3');
+
+insert into course156
+values('C04','BSC','IT','Dep4');
+
+insert into course156
+values('C05','MSC','BT','Dep5');
+
+delete from course156;
+
+select * from tab;
+
+desc subject156;
+
+insert all
+into subject156 values('P01','DSA',4)
+into subject156 values('P02','DAA',3)
+into subject156 values('P03','ECE',4)
+into subject156 values('P04','DS',4)
+into subject156 values('P05','AI',4)
+select * from dual;
+
+select * from student156;
+select * from section156;
+select * from faculty156;
+select * from department156;
+select * from course156;
+select * from subject156;
+select * from contains156;
+select * from exam156;
+select * from teaches156;
+select * from instructed156;
+
+desc student156;
+desc section156;
+desc faculty156;
+desc department156;
+desc course156;
+desc subject156;
+desc contains156;
+desc exam156;
+desc teaches156;
+desc instructed156;
+
+select * from tab;
+
+
+
+select lt.table_name, rt.column_name, lt.constraint_name,
+       lt.constraint_type, lt.search_condition
+from user_constraints lt, user_cons_columns rt
+where lt.constraint_name = rt.constraint_name
+and to_char(last_change,'DD-MON-YYYY') >= '11-SEP-2026'
+order by lt.table_name;
+
+drop table TEACHES156 cascade constraints;
+create table course156(
+ cid varchar(20) constraint pkey_cid primary key,
+ cname varchar(50) constraint notnull_cname not null,
+ discipline varchar(50) constraint notnull_discipline not null,
+ offeredby_dep varchar(10) constraint notnull_offdep not null,
+ constraint cons_fkey_offdep foreign key(offeredby_dep) references department156(depid)
+);
+
+CREATE TABLE COURSE156 (
+    cid VARCHAR(20) CONSTRAINT pkey_cid PRIMARY KEY,
+    cname VARCHAR(50) CONSTRAINT notnull_cname NOT NULL,
+    discipline VARCHAR(50) CONSTRAINT notnull_discipline NOT NULL,
+    offeredby_dep VARCHAR(10) CONSTRAINT notnull_offdep NOT NULL,
+    CONSTRAINT cons_fkey_offdep FOREIGN KEY (offeredby_dep) REFERENCES department156(depid),
+    CONSTRAINT unique_cname_dept UNIQUE (cname, offeredby_dep)
+);
+
+commit;
+
+
+alter table course156
+add constraint c_key_cname reference(cname);
+
+create table course156(
+ cid varchar(20) constraint pkey_cid primary key,
+ cname varchar(50) constraint notnull_cname not null,
+ discipline varchar(50) constraint notnull_discipline not null,
+ offeredby_dep varchar(10) constraint notnull_offdep not null,
+ constraint cons_fkey_offdep foreign key(offeredby_dep) references department156(depid)
+);
+
+
+
+
+
+
+
+
+
+
+
+alter table faculty156
+drop constraint notnull_wud;
+
+insert all
+into faculty156 values(60000, 'Rahul', 'E101', 90001, null, 'E101')
+into faculty156 values(50000, 'Priya', 'E102', 90002, null, 'E101')
+into faculty156 values(70000, 'Amit',  'E103', 90003, null, 'E101')
+into faculty156 values(55000, 'Neha',  'E104', 90004, null, 'E104')
+into faculty156 values(75000, 'Ravi',  'E105', 90005, null, 'E104')
+select * from dual;
+
+insert all
+into department156 values('Dep1', 2000, 'HITK ICT',  'CSE',  'E101')
+into department156 values('Dep2', 2001, 'HITK CB',   'ECE',  'E102')
+into department156 values('Dep3', 2002, 'HITK CME',  'AIML', 'E103')
+into department156 values('Dep4', 2003, 'HITK ICTB', 'IT',   'E104')
+into department156 values('Dep5', 2004, 'HITK CMEB', 'BT',   'E105')
+select * from dual;
+
+update faculty156 set wud = 'Dep1' where empid in ('E101','E102');
+update faculty156 set wud = 'Dep2' where empid in ('E103','E104');
+update faculty156 set wud = 'Dep3' where empid = 'E105';
+
+alter table faculty156
+modify wud varchar(10) constraint notnull_wud not null;
+
+insert all
+into course156 values('C01', 'BTECH',   'CSE',  'Dep1')
+into course156 values('C02', 'MTECH',   'ECE',  'Dep2')
+into course156 values('C03', 'DIPLOMA', 'AIML', 'Dep3')
+into course156 values('C04', 'BSC',    'IT',   'Dep4')
+into course156 values('C05', 'MSC',    'BT',   'Dep5')
+select * from dual;
+
+insert all
+into subject156 values('P01', 'DSA', 4)
+into subject156 values('P02', 'DAA', 3)
+into subject156 values('P03', 'DBMS', 4)
+into subject156 values('P04', 'OS', 4)
+into subject156 values('P05', 'AI', 4)
+select * from dual;
+
+
+insert all
+into section156 values(2024, 'S1', 'C01')
+into section156 values(2024, 'S2', 'C02')
+into section156 values(2025, 'S3', 'C03')
+into section156 values(2025, 'S4', 'C04')
+into section156 values(2026, 'S5', 'C05')
+select * from dual;
+
+insert all
+into student156 values(
+    to_date('15-01-2003','DD-MM-YYYY'), 9800000001, 'rahul@gmail.com',
+    101, 'Rahul', 700001, 101, 'Kolkata', 'S1', 'C01', 2021
+)
+into student156 values(
+    to_date('20-03-2003','DD-MM-YYYY'), 9800000002, 'priya@gmail.com',
+    102, 'Priya', 700002, 102, 'Kolkata', 'S2', 'C02', 2021
+)
+into student156 values(
+    to_date('10-05-2004','DD-MM-YYYY'), 9800000003, 'amit@gmail.com',
+    103, 'Amit', 700003, 103, 'Durgapur', 'S3', 'C03', 2022
+)
+into student156 values(
+    to_date('25-07-2004','DD-MM-YYYY'), 9800000004, 'neha@gmail.com',
+    104, 'Neha', 700004, 104, 'Siliguri', 'S4', 'C04', 2022
+)
+into student156 values(
+    to_date('12-09-2005','DD-MM-YYYY'), 9800000005, 'ravi@gmail.com',
+    105, 'Ravi', 700005, 105, 'Howrah', 'S5', 'C05', 2023
+)
+select * from dual;
+
+
+insert all
+into contains156 values('C01', 'P01', 1)
+into contains156 values('C02', 'P02', 1)
+into contains156 values('C03', 'P03', 2)
+into contains156 values('C04', 'P04', 2)
+into contains156 values('C05', 'P05', 3)
+select * from dual;
+
+
+
+insert all
+into exam156 values(101, 'P01', 101, 85)
+into exam156 values(102, 'P02', 101, 78)
+into exam156 values(103, 'P03', 102, 91)
+into exam156 values(104, 'P04', 102, 88)
+into exam156 values(105, 'P05', 103, 95)
+select * from dual;
+
+
+insert all
+into teaches156 values('E101', 'P01', 101)
+into teaches156 values('E102', 'P02', 101)
+into teaches156 values('E103', 'P03', 102)
+into teaches156 values('E104', 'P04', 102)
+into teaches156 values('E105', 'P05', 103)
+select * from dual;
+
+
+insert all
+into instructed156 values('S1', 'E101', 101)
+into instructed156 values('S2', 'E102', 101)
+into instructed156 values('S3', 'E103', 102)
+into instructed156 values('S4', 'E104', 102)
+into instructed156 values('S5', 'E105', 103)
+select * from dual;
+
+
+
+//error change 
+
+-- INSTRUCTED156 TABLE
+
+CREATE TABLE instructed156(
+    inssecid VARCHAR2(2) CONSTRAINT notnull_isecid NOT NULL,
+    insempid VARCHAR2(20) CONSTRAINT notnull_iempid NOT NULL,
+    isession NUMBER(3) CONSTRAINT notnull_ises NOT NULL,
+
+    CONSTRAINT pkey_ins
+        PRIMARY KEY(inssecid, insempid, isession),
+
+    CONSTRAINT fkey_isecid
+        FOREIGN KEY(inssecid)
+        REFERENCES section156(sec_id),
+
+    CONSTRAINT fkey_iempid
+        FOREIGN KEY(insempid)
+        REFERENCES faculty156(empid)
+);
+
+-- Remove NOT NULL constraints
+ALTER TABLE instructed156
+DROP CONSTRAINT notnull_isecid;
+
+ALTER TABLE instructed156
+DROP CONSTRAINT notnull_iempid;
+
+ALTER TABLE instructed156
+DROP CONSTRAINT notnull_ises;
+
+
+-- INSERT DATA
+INSERT ALL
+INTO instructed156 VALUES('S1', 'E101', 101)
+INTO instructed156 VALUES('S2', 'E102', 101)
+INTO instructed156 VALUES('S3', 'E103', 102)
+INTO instructed156 VALUES('S4', 'E104', 102)
+INTO instructed156 VALUES('S5', 'E105', 103)
+SELECT * FROM dual;
+
+COMMIT;
+
+-- CHECK DATA
+SELECT * FROM instructed156;
+
+-- CHECK CONSTRAINTS
+SELECT table_name,
+       column_name,
+       constraint_name,
+       constraint_type,
+       search_condition
+FROM user_constraints
+NATURAL JOIN user_cons_columns
+WHERE table_name = 'INSTRUCTED156';
+
+//
+
+
+
+
+
+
+
+
+
+Step 1 — Pehle Section check karo
+
+Run:
+
+SELECT * FROM section156;
+
+Isme S1, S2, S3, S4, S5 dikhna chahiye.
+
+Step 2 — Faculty check karo
+SELECT * FROM faculty156;
+
+Isme E101, E102, E103, E104, E105 dikhna chahiye.
+
+Step 3 — Instructed table check karo
+SELECT * FROM instructed156;
+
+Agar no rows selected aaye, koi problem nahi. Iska matlab table empty hai.
+
+Step 4 — Ab INSERT ALL run karo
+INSERT ALL
+INTO instructed156 VALUES('S1', 'E101', 101)
+INTO instructed156 VALUES('S2', 'E102', 101)
+INTO instructed156 VALUES('S3', 'E103', 102)
+INTO instructed156 VALUES('S4', 'E104', 102)
+INTO instructed156 VALUES('S5', 'E105', 103)
+SELECT * FROM dual;
+
+Run/Execute karo.
+
+Step 5 — Commit karo
+COMMIT;
+Step 6 — Final check
+SELECT * FROM instructed156;
+
+Output approximately:
+
+S1   E101   101
+S2   E102   101
+S3   E103   102
+S4   E104   102
+S5   E105   103
+
+बस इतना करना है।
+
+⚠️ CREATE TABLE instructed156 अभी मत चलाना, क्योंकि screenshot में table already मौजूद है.
+
+
+
+
+//CORRECT CODE DO NOT CHnge NY THING
+
+------------------------------------------------------------
+-- 1. DROP OLD TABLES
+------------------------------------------------------------
+
+DROP TABLE student156 CASCADE CONSTRAINTS;
+DROP TABLE instructed156 CASCADE CONSTRAINTS;
+DROP TABLE teaches156 CASCADE CONSTRAINTS;
+DROP TABLE exam156 CASCADE CONSTRAINTS;
+DROP TABLE contains156 CASCADE CONSTRAINTS;
+DROP TABLE section156 CASCADE CONSTRAINTS;
+DROP TABLE subject156 CASCADE CONSTRAINTS;
+DROP TABLE course156 CASCADE CONSTRAINTS;
+DROP TABLE department156 CASCADE CONSTRAINTS;
+DROP TABLE faculty156 CASCADE CONSTRAINTS;
+
+
+------------------------------------------------------------
+-- 2. FACULTY156
+------------------------------------------------------------
+
+CREATE TABLE faculty156
+(
+    salary NUMBER(10,2)
+        CONSTRAINT notnull_sal NOT NULL,
+
+    fname VARCHAR2(50)
+        CONSTRAINT notnull_fname NOT NULL,
+
+    empid VARCHAR2(20)
+        CONSTRAINT pkey_empid PRIMARY KEY,
+
+    emob NUMBER(10)
+        CONSTRAINT notnull_emob NOT NULL,
+
+    CONSTRAINT ckey_emob UNIQUE(emob)
+);
+
+
+------------------------------------------------------------
+-- 3. DEPARTMENT156
+------------------------------------------------------------
+
+CREATE TABLE department156
+(
+    depid VARCHAR2(10)
+        CONSTRAINT pkey_did PRIMARY KEY,
+
+    yos NUMBER(4),
+
+    offloc VARCHAR2(20)
+        CONSTRAINT notnull_offloc NOT NULL,
+
+    dname VARCHAR2(20)
+        CONSTRAINT notnull_dname NOT NULL,
+
+    hod VARCHAR2(20)
+        CONSTRAINT notnull_hod NOT NULL,
+
+    CONSTRAINT ckey_hod UNIQUE(hod),
+
+    CONSTRAINT fkey_hod
+        FOREIGN KEY(hod)
+        REFERENCES faculty156(empid),
+
+    CONSTRAINT ckey_dname UNIQUE(dname)
+);
+
+
+------------------------------------------------------------
+-- 4. ADD FACULTY FOREIGN KEYS
+------------------------------------------------------------
+
+ALTER TABLE faculty156
+ADD wud VARCHAR2(10);
+
+ALTER TABLE faculty156
+ADD supervisedby_emp VARCHAR2(20);
+
+
+ALTER TABLE faculty156
+ADD CONSTRAINT cons_fkey_wud
+FOREIGN KEY(wud)
+REFERENCES department156(depid);
+
+
+ALTER TABLE faculty156
+MODIFY wud VARCHAR2(10)
+CONSTRAINT notnull_wud NOT NULL;
+
+
+ALTER TABLE faculty156
+ADD CONSTRAINT cons_fkey_sup
+FOREIGN KEY(supervisedby_emp)
+REFERENCES faculty156(empid);
+
+
+------------------------------------------------------------
+-- 5. COURSE156
+------------------------------------------------------------
+
+CREATE TABLE course156
+(
+    cid VARCHAR2(20)
+        CONSTRAINT pkey_cid PRIMARY KEY,
+
+    cname VARCHAR2(50)
+        CONSTRAINT cname_not_null NOT NULL,
+
+    discipline VARCHAR2(50)
+        CONSTRAINT discipline_not_null NOT NULL,
+
+    offeredby_dep VARCHAR2(10)
+        CONSTRAINT notnull_offdep NOT NULL,
+
+    CONSTRAINT cons_fkey_offdep
+        FOREIGN KEY(offeredby_dep)
+        REFERENCES department156(depid),
+
+    CONSTRAINT cname_disc_uniq
+        UNIQUE(cname, discipline)
+);
+
+
+------------------------------------------------------------
+-- 6. SECTION156
+------------------------------------------------------------
+
+CREATE TABLE section156
+(
+    batch NUMBER(4)
+        CONSTRAINT notnull_batch NOT NULL,
+
+    sec_id VARCHAR2(2)
+        CONSTRAINT pkey_sec PRIMARY KEY
+);
+
+
+ALTER TABLE section156
+ADD studying_cid VARCHAR2(10)
+CONSTRAINT notnull_scid NOT NULL;
+
+
+ALTER TABLE section156
+ADD CONSTRAINT fkey_scid
+FOREIGN KEY(studying_cid)
+REFERENCES course156(cid);
+
+
+------------------------------------------------------------
+-- 7. SUBJECT156
+------------------------------------------------------------
+
+CREATE TABLE subject156
+(
+    papercode VARCHAR2(20)
+        CONSTRAINT pkey_pcode PRIMARY KEY,
+
+    pname VARCHAR2(20)
+        CONSTRAINT notnull_pname NOT NULL
+);
+
+
+------------------------------------------------------------
+-- 8. STUDENT156
+------------------------------------------------------------
+
+CREATE TABLE student156
+(
+    dob DATE
+        CONSTRAINT notnull_dob NOT NULL,
+
+    mobile NUMBER(10)
+        CONSTRAINT notnull_mob2 NOT NULL,
+
+    email VARCHAR2(50)
+        CONSTRAINT notnull_email2 NOT NULL,
+
+    roll NUMBER(10)
+        CONSTRAINT pkey_roll_stud PRIMARY KEY,
+
+    sname VARCHAR2(50)
+        CONSTRAINT notnull_sname NOT NULL,
+
+    pincode NUMBER(6)
+        CONSTRAINT notnull_pin NOT NULL,
+
+    houseno NUMBER(3)
+        CONSTRAINT notnull_hno NOT NULL,
+
+    city VARCHAR2(50)
+        CONSTRAINT notnull_city NOT NULL,
+
+    CONSTRAINT ckey_sname_address
+        UNIQUE(sname,pincode,houseno,city),
+
+    CONSTRAINT ckey_email_stud
+        UNIQUE(email),
+
+    CONSTRAINT ckey_mob_stud
+        UNIQUE(mobile)
+);
+
+
+ALTER TABLE student156
+ADD belongsto_sec VARCHAR2(2)
+CONSTRAINT cons_nnull_btsec NOT NULL;
+
+
+ALTER TABLE student156
+ADD CONSTRAINT cons_fkey_btsec
+FOREIGN KEY(belongsto_sec)
+REFERENCES section156(sec_id);
+
+
+ALTER TABLE student156
+ADD enroll_cid VARCHAR2(10)
+CONSTRAINT notnull_ecid NOT NULL;
+
+
+ALTER TABLE student156
+ADD CONSTRAINT fkey_encid
+FOREIGN KEY(enroll_cid)
+REFERENCES course156(cid);
+
+
+ALTER TABLE student156
+ADD yoa NUMBER(4)
+CONSTRAINT notnull_yoa NOT NULL;
+
+
+------------------------------------------------------------
+-- 9. CONTAINS156
+------------------------------------------------------------
+
+CREATE TABLE contains156
+(
+    ccid VARCHAR2(20),
+
+    cpapcode VARCHAR2(20),
+
+    semester NUMBER(1),
+
+    CONSTRAINT pkey_contains
+        PRIMARY KEY(ccid,cpapcode,semester),
+
+    CONSTRAINT fkey_ccid
+        FOREIGN KEY(ccid)
+        REFERENCES course156(cid),
+
+    CONSTRAINT fkey_cpap
+        FOREIGN KEY(cpapcode)
+        REFERENCES subject156(papercode)
+);
+
+
+------------------------------------------------------------
+-- 10. EXAM156
+------------------------------------------------------------
+
+CREATE TABLE exam156
+(
+    perfby_roll NUMBER(10),
+
+    epapcode VARCHAR2(20),
+
+    esession NUMBER(3),
+
+    marks NUMBER(3)
+        CONSTRAINT notnull_marks NOT NULL,
+
+    CONSTRAINT pkey_exam
+        PRIMARY KEY(perfby_roll,epapcode,esession),
+
+    CONSTRAINT fkey_perfbyroll
+        FOREIGN KEY(perfby_roll)
+        REFERENCES student156(roll),
+
+    CONSTRAINT fkey_papercode
+        FOREIGN KEY(epapcode)
+        REFERENCES subject156(papercode)
+);
+
+
+------------------------------------------------------------
+-- 11. TEACHES156
+------------------------------------------------------------
+
+CREATE TABLE teaches156
+(
+    tempid VARCHAR2(20),
+
+    tpapcode VARCHAR2(10),
+
+    tsession NUMBER(3),
+
+    CONSTRAINT pkey_teaches
+        PRIMARY KEY(tempid,tpapcode,tsession),
+
+    CONSTRAINT fkey_tid
+        FOREIGN KEY(tempid)
+        REFERENCES faculty156(empid),
+
+    CONSTRAINT fkey_tpap
+        FOREIGN KEY(tpapcode)
+        REFERENCES subject156(papercode)
+);
+
+
+------------------------------------------------------------
+-- 12. INSTRUCTED156
+------------------------------------------------------------
+
+CREATE TABLE instructed156
+(
+    inssecid VARCHAR2(2),
+
+    insempid VARCHAR2(20),
+
+    isession NUMBER(3),
+
+    CONSTRAINT pkey_ins
+        PRIMARY KEY(inssecid,insempid,isession),
+
+    CONSTRAINT fkey_isecid
+        FOREIGN KEY(inssecid)
+        REFERENCES section156(sec_id),
+
+    CONSTRAINT fkey_iempid
+        FOREIGN KEY(insempid)
+        REFERENCES faculty156(empid)
+);
+
+
+------------------------------------------------------------
+-- INSERT DATA
+------------------------------------------------------------
+
+------------------------------------------------------------
+-- FACULTY DATA
+------------------------------------------------------------
+
+INSERT INTO faculty156
+(salary,fname,empid,emob,wud,supervisedby_emp)
+VALUES
+(60000,'Rahul','E101',90001,'Dep1','E101');
+
+INSERT INTO faculty156
+(salary,fname,empid,emob,wud,supervisedby_emp)
+VALUES
+(50000,'Priya','E102',90002,'Dep2','E101');
+
+INSERT INTO faculty156
+(salary,fname,empid,emob,wud,supervisedby_emp)
+VALUES
+(70000,'Amit','E103',90003,'Dep3','E104');
+
+INSERT INTO faculty156
+(salary,fname,empid,emob,wud,supervisedby_emp)
+VALUES
+(55000,'Neha','E104',90004,'Dep4','E104');
+
+INSERT INTO faculty156
+(salary,fname,empid,emob,wud,supervisedby_emp)
+VALUES
+(75000,'Ravi','E105',90005,'Dep5','E101');
+
+
+------------------------------------------------------------
+-- DEPARTMENT DATA
+------------------------------------------------------------
+
+INSERT INTO department156
+(depid,yos,offloc,dname,hod)
+VALUES
+('Dep1',4,'Block A','CSE','E101');
+
+INSERT INTO department156
+(depid,yos,offloc,dname,hod)
+VALUES
+('Dep2',2,'Block B','ECE','E102');
+
+INSERT INTO department156
+(depid,yos,offloc,dname,hod)
+VALUES
+('Dep3',3,'Block C','AIML','E103');
+
+INSERT INTO department156
+(depid,yos,offloc,dname,hod)
+VALUES
+('Dep4',3,'Block D','IT','E104');
+
+INSERT INTO department156
+(depid,yos,offloc,dname,hod)
+VALUES
+('Dep5',2,'Block E','BT','E105');
+
+
+------------------------------------------------------------
+-- COURSE DATA
+------------------------------------------------------------
+
+INSERT INTO course156
+(cid,cname,discipline,offeredby_dep)
+VALUES
+('C01','BTECH','CSE','Dep1');
+
+INSERT INTO course156
+(cid,cname,discipline,offeredby_dep)
+VALUES
+('C02','MTECH','ECE','Dep2');
+
+INSERT INTO course156
+(cid,cname,discipline,offeredby_dep)
+VALUES
+('C03','DIPLOMA','AIML','Dep3');
+
+INSERT INTO course156
+(cid,cname,discipline,offeredby_dep)
+VALUES
+('C04','BSC','IT','Dep4');
+
+INSERT INTO course156
+(cid,cname,discipline,offeredby_dep)
+VALUES
+('C05','MSC','BT','Dep5');
+
+
+------------------------------------------------------------
+-- SECTION DATA
+------------------------------------------------------------
+
+INSERT INTO section156
+(batch,sec_id,studying_cid)
+VALUES
+(2024,'S1','C01');
+
+INSERT INTO section156
+(batch,sec_id,studying_cid)
+VALUES
+(2025,'S2','C02');
+
+INSERT INTO section156
+(batch,sec_id,studying_cid)
+VALUES
+(2026,'S3','C03');
+
+INSERT INTO section156
+(batch,sec_id,studying_cid)
+VALUES
+(2025,'S4','C04');
+
+INSERT INTO section156
+(batch,sec_id,studying_cid)
+VALUES
+(2026,'S5','C05');
+
+
+------------------------------------------------------------
+-- SUBJECT DATA
+------------------------------------------------------------
+
+INSERT INTO subject156
+(papercode,pname)
+VALUES
+('P01','DSA');
+
+INSERT INTO subject156
+(papercode,pname)
+VALUES
+('P02','DAA');
+
+INSERT INTO subject156
+(papercode,pname)
+VALUES
+('P03','DBMS');
+
+INSERT INTO subject156
+(papercode,pname)
+VALUES
+('P04','OS');
+
+INSERT INTO subject156
+(papercode,pname)
+VALUES
+('P05','AI');
+
+
+------------------------------------------------------------
+-- STUDENT DATA
+------------------------------------------------------------
+
+INSERT INTO student156
+(dob,mobile,email,roll,sname,pincode,houseno,city,
+ belongsto_sec,enroll_cid,yoa)
+VALUES
+(TO_DATE('2005-01-10','YYYY-MM-DD'),
+9000000001,'rahul@gmail.com',101,'Rahul',823001,101,'Gaya',
+'S1','C01',2024);
+
+INSERT INTO student156
+(dob,mobile,email,roll,sname,pincode,houseno,city,
+ belongsto_sec,enroll_cid,yoa)
+VALUES
+(TO_DATE('2005-02-15','YYYY-MM-DD'),
+9000000002,'priya@gmail.com',102,'Priya',823002,102,'Gaya',
+'S2','C02',2025);
+
+INSERT INTO student156
+(dob,mobile,email,roll,sname,pincode,houseno,city,
+ belongsto_sec,enroll_cid,yoa)
+VALUES
+(TO_DATE('2004-03-20','YYYY-MM-DD'),
+9000000003,'amit@gmail.com',103,'Amit',823003,103,'Gaya',
+'S3','C03',2026);
+
+INSERT INTO student156
+(dob,mobile,email,roll,sname,pincode,houseno,city,
+ belongsto_sec,enroll_cid,yoa)
+VALUES
+(TO_DATE('2004-04-25','YYYY-MM-DD'),
+9000000004,'neha@gmail.com',104,'Neha',823004,104,'Gaya',
+'S4','C04',2025);
+
+INSERT INTO student156
+(dob,mobile,email,roll,sname,pincode,houseno,city,
+ belongsto_sec,enroll_cid,yoa)
+VALUES
+(TO_DATE('2003-05-30','YYYY-MM-DD'),
+9000000005,'ravi@gmail.com',105,'Ravi',823005,105,'Gaya',
+'S5','C05',2026);
+
+
+------------------------------------------------------------
+-- CONTAINS DATA
+------------------------------------------------------------
+
+INSERT INTO contains156
+(ccid,cpapcode,semester)
+VALUES
+('C01','P01',1);
+
+INSERT INTO contains156
+(ccid,cpapcode,semester)
+VALUES
+('C02','P02',1);
+
+INSERT INTO contains156
+(ccid,cpapcode,semester)
+VALUES
+('C03','P03',2);
+
+INSERT INTO contains156
+(ccid,cpapcode,semester)
+VALUES
+('C04','P04',2);
+
+INSERT INTO contains156
+(ccid,cpapcode,semester)
+VALUES
+('C05','P05',3);
+
+
+------------------------------------------------------------
+-- EXAM DATA
+------------------------------------------------------------
+
+INSERT INTO exam156
+(perfby_roll,epapcode,esession,marks)
+VALUES
+(101,'P01',101,85);
+
+INSERT INTO exam156
+(perfby_roll,epapcode,esession,marks)
+VALUES
+(102,'P02',101,78);
+
+INSERT INTO exam156
+(perfby_roll,epapcode,esession,marks)
+VALUES
+(103,'P03',102,88);
+
+INSERT INTO exam156
+(perfby_roll,epapcode,esession,marks)
+VALUES
+(104,'P04',102,75);
+
+INSERT INTO exam156
+(perfby_roll,epapcode,esession,marks)
+VALUES
+(105,'P05',103,92);
+
+
+------------------------------------------------------------
+-- TEACHES DATA
+------------------------------------------------------------
+
+INSERT INTO teaches156
+(tempid,tpapcode,tsession)
+VALUES
+('E101','P01',101);
+
+INSERT INTO teaches156
+(tempid,tpapcode,tsession)
+VALUES
+('E102','P02',101);
+
+INSERT INTO teaches156
+(tempid,tpapcode,tsession)
+VALUES
+('E103','P03',102);
+
+INSERT INTO teaches156
+(tempid,tpapcode,tsession)
+VALUES
+('E104','P04',102);
+
+INSERT INTO teaches156
+(tempid,tpapcode,tsession)
+VALUES
+('E105','P05',103);
+
+
+------------------------------------------------------------
+-- INSTRUCTED DATA
+------------------------------------------------------------
+
+INSERT INTO instructed156
+(inssecid,insempid,isession)
+VALUES
+('S1','E101',101);
+
+INSERT INTO instructed156
+(inssecid,insempid,isession)
+VALUES
+('S2','E102',101);
+
+INSERT INTO instructed156
+(inssecid,insempid,isession)
+VALUES
+('S3','E103',102);
+
+INSERT INTO instructed156
+(inssecid,insempid,isession)
+VALUES
+('S4','E104',102);
+
+INSERT INTO instructed156
+(inssecid,insempid,isession)
+VALUES
+('S5','E105',103);
+
+
+------------------------------------------------------------
+-- SAVE
+------------------------------------------------------------
+
+COMMIT;
+
+
+select lt.table_name, rt.column_name, lt.constraint_name, 
+       lt.constraint_type, lt.search_condition 
+from user_constraints lt, user_cons_columns rt 
+where lt.constraint_name = rt.constraint_name 
+and to_char(last_change,'DD-MON-YYYY') >= '25-sep-2026' 
+order by lt.table_name; 
+ 

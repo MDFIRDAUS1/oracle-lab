@@ -1,0 +1,189 @@
+```sql
+/* =========================================================
+   CSE3151 DBMS LAB
+   DAY 3 - ASSIGNMENT OF SQL
+   JOINS AND SINGLE ROW FUNCTIONS
+   ROLL NO. 156
+   FINAL ANSWERS
+   ========================================================= */
+
+
+/* =========================================================
+   Q1. Display name, id, salary of faculty employees along
+       with same details of respective supervisor, provided
+       both joined between August to October.
+   ========================================================= */
+
+/* Required columns missing from supplied FACULTY156 table */
+ALTER TABLE faculty156 ADD joining_date DATE;
+
+UPDATE faculty156
+SET joining_date =
+    CASE empid
+        WHEN 'E101' THEN TO_DATE('15-AUG-2020','DD-MON-YYYY')
+        WHEN 'E102' THEN TO_DATE('20-SEP-2021','DD-MON-YYYY')
+        WHEN 'E103' THEN TO_DATE('10-OCT-2022','DD-MON-YYYY')
+        WHEN 'E104' THEN TO_DATE('05-JUL-2020','DD-MON-YYYY')
+        WHEN 'E105' THEN TO_DATE('25-AUG-2023','DD-MON-YYYY')
+    END;
+
+SELECT f.fname AS employee_name,
+       f.empid AS employee_id,
+       f.salary AS employee_salary,
+       s.fname AS supervisor_name,
+       s.empid AS supervisor_id,
+       s.salary AS supervisor_salary
+FROM faculty156 f
+JOIN faculty156 s
+     ON f.supervisedby_emp = s.empid
+WHERE EXTRACT(MONTH FROM f.joining_date) BETWEEN 8 AND 10
+  AND EXTRACT(MONTH FROM s.joining_date) BETWEEN 8 AND 10;
+
+
+/* =========================================================
+   Q2. Display faculty employee and supervisor details where
+       employee is older than supervisor.
+   ========================================================= */
+
+/* Required DOB column missing from supplied FACULTY156 */
+ALTER TABLE faculty156 ADD dob DATE;
+
+UPDATE faculty156
+SET dob =
+    CASE empid
+        WHEN 'E101' THEN TO_DATE('15-JAN-1975','DD-MON-YYYY')
+        WHEN 'E102' THEN TO_DATE('20-MAR-1980','DD-MON-YYYY')
+        WHEN 'E103' THEN TO_DATE('10-MAY-1970','DD-MON-YYYY')
+        WHEN 'E104' THEN TO_DATE('25-JUL-1978','DD-MON-YYYY')
+        WHEN 'E105' THEN TO_DATE('12-SEP-1985','DD-MON-YYYY')
+    END;
+
+SELECT f.fname AS employee_name,
+       f.empid AS employee_id,
+       f.salary AS employee_salary,
+       s.fname AS supervisor_name,
+       s.empid AS supervisor_id,
+       s.salary AS supervisor_salary
+FROM faculty156 f
+JOIN faculty156 s
+     ON f.supervisedby_emp = s.empid
+WHERE f.dob < s.dob;
+
+
+/* =========================================================
+   Q3. Display passenger details and ticket details where
+       name contains A/a exactly 1 or 2 times.
+   ========================================================= */
+
+SELECT c.cname,
+       c.aadharno,
+       c.mobileno,
+       r.pnr_no,
+       r.fare
+FROM testcustomer_156 c
+JOIN reservation156 r
+     ON c.aadharno = r.booked_by_aadhar
+WHERE REGEXP_COUNT(LOWER(c.cname), 'a') BETWEEN 1 AND 2;
+
+
+/* =========================================================
+   Q4. Display passenger + ticket + seat details along with
+       idle passengers and unsold seats.
+   ========================================================= */
+
+SELECT c.cname,
+       c.aadharno,
+       c.mobileno,
+       r.pnr_no,
+       r.fare,
+       s.seat_no,
+       s.offered_by_trip_id AS trip_id,
+       t.source,
+       t.destination,
+       t.date_of_trip
+FROM testcustomer_156 c
+FULL OUTER JOIN reservation156 r
+     ON c.aadharno = r.booked_by_aadhar
+FULL OUTER JOIN seats156 s
+     ON r.pnr_no = s.booked_under_pnr
+LEFT JOIN trip156 t
+     ON s.offered_by_trip_id = t.trip_id
+ORDER BY c.aadharno, s.offered_by_trip_id, s.seat_no;
+
+
+/* =========================================================
+   Q5. Display details of each supervisor faculty along with
+       details of their corresponding supervisor.
+       Non-supervisor faculty must be excluded.
+   ========================================================= */
+
+SELECT f.empid,
+       f.fname,
+       f.salary,
+       s.empid AS supervisor_id,
+       s.fname AS supervisor_name,
+       s.salary AS supervisor_salary
+FROM faculty156 f
+JOIN faculty156 s
+     ON f.supervisedby_emp = s.empid
+WHERE EXISTS
+      (
+          SELECT 1
+          FROM faculty156 x
+          WHERE x.supervisedby_emp = f.empid
+      );
+
+
+/* =========================================================
+   Q6. Display passenger details and departure/return date
+       when return journey is within 24 hours and source/
+       destination pair is reversed.
+   ========================================================= */
+
+SELECT DISTINCT
+       c.cname,
+       c.aadharno,
+       c.mobileno,
+       t1.date_of_trip AS departure_date,
+       t2.date_of_trip AS return_date
+FROM testcustomer_156 c
+JOIN reservation156 r1
+     ON c.aadharno = r1.booked_by_aadhar
+JOIN seats156 s1
+     ON r1.pnr_no = s1.booked_under_pnr
+JOIN trip156 t1
+     ON s1.offered_by_trip_id = t1.trip_id
+JOIN reservation156 r2
+     ON c.aadharno = r2.booked_by_aadhar
+JOIN seats156 s2
+     ON r2.pnr_no = s2.booked_under_pnr
+JOIN trip156 t2
+     ON s2.offered_by_trip_id = t2.trip_id
+WHERE t1.source = t2.destination
+  AND t1.destination = t2.source
+  AND t2.date_of_trip > t1.date_of_trip
+  AND t2.date_of_trip - t1.date_of_trip <= 1;
+
+
+/* =========================================================
+   Q7. Display trips where no ticket has been sold and
+       remaining time to start is less than 24 hours.
+   ========================================================= */
+
+SELECT t.trip_id,
+       t.conductedby_veh_no AS veh_reg_no,
+       t.date_of_trip
+FROM trip156 t
+WHERE t.date_of_trip > SYSDATE
+  AND t.date_of_trip < SYSDATE + 1
+  AND NOT EXISTS
+      (
+          SELECT 1
+          FROM seats156 s
+          WHERE s.offered_by_trip_id = t.trip_id
+            AND s.booked_under_pnr IS NOT NULL
+      );
+
+
+COMMIT;
+```

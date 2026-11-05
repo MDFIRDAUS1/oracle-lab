@@ -1,115 +1,144 @@
-Sure. Below are all 7 answers in English, in Oracle SQL format, ready to write in your practical copy.
-1. Faculty employees and their supervisors who joined between August and October
-SELECT f.fname AS employee_name,
-       f.empid AS employee_id,
-       f.salary AS employee_salary,
-       s.fname AS supervisor_name,
-       s.empid AS supervisor_id,
-       s.salary AS supervisor_salary
-FROM faculty156 f
+# CSE3151 DBMS LAB
+## DAY 3 – JOINS AND SINGLE ROW FUNCTIONS
+**ROLL NO.: 156**
+
+### Q1. Display employee and supervisor details when both joined between August and October.
+
+```sql
+SELECT
+    e.fname AS emp_name,
+    e.empid AS emp_id,
+    e.salary AS emp_salary,
+    s.fname AS sup_name,
+    s.empid AS sup_id,
+    s.salary AS sup_salary
+FROM faculty156 e
 JOIN faculty156 s
-ON f.supervisedby_emp = s.empid
-WHERE EXTRACT(MONTH FROM f.joining_date) BETWEEN 8 AND 10
-  AND EXTRACT(MONTH FROM s.joining_date) BETWEEN 8 AND 10;
-Note: If your joining-date column has a different name, replace joining_date with the actual column name.
-2. Faculty employees who are older than their supervisors
-SELECT f.fname AS employee_name,
-       f.empid AS employee_id,
-       f.salary AS employee_salary,
-       s.fname AS supervisor_name,
-       s.empid AS supervisor_id,
-       s.salary AS supervisor_salary
-FROM faculty156 f
+    ON e.supervisedby_emp = s.empid
+WHERE EXTRACT(MONTH FROM e.doj) BETWEEN 8 AND 10
+  AND EXTRACT(MONTH FROM s.doj) BETWEEN 8 AND 10;
+```
+
+### Q2. Display employee and supervisor details when employee is older than supervisor.
+
+```sql
+SELECT
+    e.fname AS emp_name,
+    e.empid AS emp_id,
+    e.salary AS emp_salary,
+    s.fname AS sup_name,
+    s.empid AS sup_id,
+    s.salary AS sup_salary
+FROM faculty156 e
 JOIN faculty156 s
-ON f.supervisedby_emp = s.empid
-WHERE f.dob < s.dob;
-Here, an earlier DOB means the employee is older than the supervisor.
-3. Passengers whose name contains A/a 1 to 2 times
-SELECT c.cname,
-       c.aadharno,
-       c.mobileno,
-       r.pnr_no,
-       r.fare
-FROM testcustomer_156 c
+    ON e.supervisedby_emp = s.empid
+WHERE e.dob < s.dob;
+```
+
+### Q3. Display passenger and booking details when passenger name contains A/a exactly 1 or 2 times.
+
+```sql
+SELECT
+    c.cname,
+    c.aadharno,
+    c.mobileno,
+    r.pnr_no,
+    r.cost
+FROM testcustomer156 c
 JOIN reservation156 r
-ON c.aadharno = r.booked_by_aadhar
-WHERE REGEXP_COUNT(LOWER(c.cname), 'a') BETWEEN 1 AND 2;
-This displays passengers whose name contains A or a, with the total occurrence between 1 and 2.
-4. Passengers, ticket details, seat details, idle passengers and unsold seats
-SELECT c.cname,
-       c.aadharno,
-       c.mobileno,
-       r.pnr_no,
-       r.fare,
-       s.seat_no,
-       s.offered_by_trip_id AS trip_id
-FROM testcustomer_156 c
-LEFT JOIN reservation156 r
-ON c.aadharno = r.booked_by_aadhar
-LEFT JOIN seats156 s
-ON r.pnr_no = s.booked_under_pnr
+    ON c.aadharno = r.booked_by_aadharno
+WHERE LENGTH(UPPER(c.cname))
+    - LENGTH(REPLACE(UPPER(c.cname), 'A', ''))
+    BETWEEN 1 AND 2;
+```
 
-UNION
+### Q4. Display all passengers, booking details and seat details, including passengers who never booked and seats that have not been booked.
 
-SELECT NULL AS cname,
-       NULL AS aadharno,
-       NULL AS mobileno,
-       NULL AS pnr_no,
-       NULL AS fare,
-       s.seat_no,
-       s.offered_by_trip_id AS trip_id
-FROM seats156 s
-WHERE s.booked_under_pnr IS NULL;
-LEFT JOIN includes passengers who have never bought a ticket.
-booked_under_pnr IS NULL identifies unsold seats.
-5. Supervisors and their corresponding supervisors
+```sql
+SELECT
+    c.cname,
+    c.aadharno,
+    c.mobileno,
+    r.pnr_no,
+    r.cost,
+    s.seat_no,
+    s.offeredby_trip_id,
+    s.bookedby_pnr_no
+FROM testcustomer156 c
+FULL OUTER JOIN reservation156 r
+    ON c.aadharno = r.booked_by_aadharno
+FULL OUTER JOIN seats156 s
+    ON r.pnr_no = s.bookedby_pnr_no;
+```
+
+### Q5. Display supervisor faculty details along with their corresponding supervisors. Exclude faculty who are not supervisors.
+
+```sql
 SELECT DISTINCT
-       f.empid AS supervisor_id,
-       f.fname AS supervisor_name,
-       f.salary AS supervisor_salary,
-       s.empid AS senior_supervisor_id,
-       s.fname AS senior_supervisor_name,
-       s.salary AS senior_supervisor_salary
-FROM faculty156 f
-JOIN faculty156 e
-ON e.supervisedby_emp = f.empid
-LEFT JOIN faculty156 s
-ON f.supervisedby_emp = s.empid;
-DISTINCT is used to avoid duplicate supervisor records.
-6. Passenger departure and return dates within 24 hours
-Assuming reservation156 contains trip_id:
+    sup.empid AS supervisor_id,
+    sup.fname AS supervisor_name,
+    sup.salary AS supervisor_salary,
+    mgr.empid AS mgr_id,
+    mgr.fname AS mgr_name,
+    mgr.salary AS mgr_salary
+FROM faculty156 emp
+JOIN faculty156 sup
+    ON emp.supervisedby_emp = sup.empid
+JOIN faculty156 mgr
+    ON sup.supervisedby_emp = mgr.empid;
+```
+
+### Q6. Display passenger details and departure/return dates when return journey is within 24 hours and source/destination are reversed.
+
+```sql
 SELECT DISTINCT
-       c.cname,
-       c.aadharno,
-       c.mobileno,
-       t1.date_of_trip AS departure_date,
-       t2.date_of_trip AS return_date
-FROM testcustomer_156 c
+    c.cname,
+    c.aadharno,
+    c.mobileno,
+    t1.date_of_trip AS departure_date,
+    t2.date_of_trip AS return_date
+FROM testcustomer156 c
 JOIN reservation156 r1
-ON c.aadharno = r1.booked_by_aadhar
+    ON c.aadharno = r1.booked_by_aadharno
+JOIN seats156 s1
+    ON r1.pnr_no = s1.bookedby_pnr_no
 JOIN trip156 t1
-ON r1.trip_id = t1.trip_id
+    ON s1.offeredby_trip_id = t1.trip_id
 JOIN reservation156 r2
-ON c.aadharno = r2.booked_by_aadhar
+    ON c.aadharno = r2.booked_by_aadharno
+JOIN seats156 s2
+    ON r2.pnr_no = s2.bookedby_pnr_no
 JOIN trip156 t2
-ON r2.trip_id = t2.trip_id
-WHERE t1.source = t2.destination
-  AND t1.destination = t2.source
+    ON s2.offeredby_trip_id = t2.trip_id
+WHERE t2.source = t1.destination
+  AND t2.destination = t1.source
+  AND t2.trip_id <> t1.trip_id
   AND t2.date_of_trip > t1.date_of_trip
-  AND t2.date_of_trip - t1.date_of_trip <= 1;
-The query checks that the return journey is between the same source and destination in the opposite direction and occurs within 24 hours.
-7. Trips with no tickets sold and less than 24 hours remaining
-SELECT t.trip_id AS trip_no,
-       t.conductedby_veh_no AS veh_reg_no,
-       t.date_of_trip
+  AND t2.date_of_trip <= t1.date_of_trip + 1;
+```
+
+### Q7. Display trips whose tickets have not been sold and which start within the next 24 hours.
+
+```sql
+SELECT
+    t.trip_id AS trip_no,
+    t.conductedby_veh_reg_no AS vehicle_reg_no,
+    t.date_of_trip
 FROM trip156 t
-LEFT JOIN seats156 s
-ON t.trip_id = s.offered_by_trip_id
-WHERE s.booked_under_pnr IS NULL
-  AND t.date_of_trip > SYSDATE
-  AND t.date_of_trip <= SYSDATE + 1;
-Here:
-SYSDATE = current date and time.
-SYSDATE + 1 = 24 hours from the current date/time.
-booked_under_pnr IS NULL = no ticket has been sold/booked.
-Important: Q1, Q2 and Q6 depend on columns such as joining_date, dob, and trip_id. If your actual table uses different column names, those names must be replaced accordingly.
+WHERE t.date_of_trip > SYSDATE
+  AND t.date_of_trip < SYSDATE + 1
+  AND NOT EXISTS (
+      SELECT 1
+      FROM seats156 s
+      WHERE s.offeredby_trip_id = t.trip_id
+        AND s.bookedby_pnr_no IS NOT NULL
+  );
+```
+
+### Final
+
+```sql
+COMMIT;
+```
+
+If any column names differ from those used in the queries, replace them with the actual column names in your tables.
